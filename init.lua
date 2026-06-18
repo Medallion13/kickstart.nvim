@@ -377,23 +377,19 @@ do
   }
 
   -- [[ Colorscheme ]]
-  -- You can easily change to a different colorscheme.
-  -- Change the name of the colorscheme plugin below, and then
-  -- change the command under that to load whatever the name of that colorscheme is.
+  -- PERSONALIZACIÓN: usamos onedark (estilo "darker", parecido a One Half Dark)
+  -- en lugar del tokyonight por defecto de kickstart.
   --
-  -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-  vim.pack.add { gh 'folke/tokyonight.nvim' }
-  ---@diagnostic disable-next-line: missing-fields
-  require('tokyonight').setup {
-    styles = {
-      comments = { italic = false }, -- Disable italics in comments
-    },
+  -- Si quieres volver al default, comenta este bloque y descomenta el de tokyonight
+  -- que viene en el repo original.
+  --
+  -- Para ver los colorschemes instalados puedes usar `:Telescope colorscheme`.
+  vim.pack.add { gh 'navarasu/onedark.nvim' }
+  require('onedark').setup {
+    -- Opciones: 'dark', 'darker', 'cool', 'deep', 'warm', 'warmer', 'light'
+    style = 'darker',
   }
-
-  -- Load the colorscheme here.
-  -- Like many other themes, this one has different styles, and you could load
-  -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-  vim.cmd.colorscheme 'tokyonight-night'
+  vim.cmd.colorscheme 'onedark'
 
   -- Highlight todo, notes, etc in comments
   vim.pack.add { gh 'folke/todo-comments.nvim' }
@@ -694,7 +690,6 @@ do
   local servers = {
     -- clangd = {},
     -- gopls = {},
-    -- pyright = {},
     -- rust_analyzer = {},
     --
     -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -702,6 +697,25 @@ do
     --
     -- But for many setups, the LSP (`ts_ls`) will work just fine
     -- ts_ls = {},
+
+    -- PERSONALIZACIÓN (Python): análisis de tipos con Pyright
+    pyright = {
+      settings = {
+        python = {
+          analysis = {
+            typeCheckingMode = 'basic', -- O 'off' si te molesta mucho
+          },
+        },
+      },
+    },
+
+    -- PERSONALIZACIÓN (Python): Ruff para linting/formato.
+    --  Desactivamos su 'hover' para que no pelee con Pyright.
+    ruff = {
+      on_attach = function(client)
+        if client.server_capabilities then client.server_capabilities.hoverProvider = false end
+      end,
+    },
 
     stylua = {}, -- Used to format Lua code
 
@@ -781,9 +795,10 @@ do
     notify_on_error = false,
     format_on_save = function(bufnr)
       -- You can specify filetypes to autoformat on save here:
+      -- PERSONALIZACIÓN: formateo automático al guardar para Python (via Ruff).
       local enabled_filetypes = {
         -- lua = true,
-        -- python = true,
+        python = true,
       }
       if enabled_filetypes[vim.bo[bufnr].filetype] then
         return { timeout_ms = 500 }
@@ -797,8 +812,8 @@ do
     -- You can also specify external formatters in here.
     formatters_by_ft = {
       -- rust = { 'rustfmt' },
-      -- Conform can also run multiple formatters sequentially
-      -- python = { "isort", "black" },
+      -- PERSONALIZACIÓN (Python): Conform corre estos formateadores en secuencia.
+      python = { 'ruff_format', 'ruff_fix' },
       --
       -- You can use 'stop_after_first' to run the first available formatter from the list
       -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -966,11 +981,12 @@ do
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
+  -- PERSONALIZACIÓN: tenía activados indent_line, autopairs y neo-tree.
   -- require 'kickstart.plugins.debug'
-  -- require 'kickstart.plugins.indent_line'
+  require 'kickstart.plugins.indent_line'
   -- require 'kickstart.plugins.lint'
-  -- require 'kickstart.plugins.autopairs'
-  -- require 'kickstart.plugins.neo-tree'
+  require 'kickstart.plugins.autopairs'
+  require 'kickstart.plugins.neo-tree'
   -- require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
 
   -- NOTE: You can add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
